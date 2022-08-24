@@ -29,6 +29,7 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QFile, QIODevice
 from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox, QDialog
 from qgis.PyQt.QtXml import QDomDocument
+import locale
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_memorialGenerator.ui'))
@@ -186,9 +187,9 @@ class MemorialGenerator(QDialog, FORM_CLASS):
         newData = newData.replace("[MERIDIANO]", self.meridianoEdit.text())
         newData = newData.replace("[KAPPA]", self.kappaEdit.text())
         geomPerimeter = self.geomPerimeter/kappa
-        newData = newData.replace("[PERIMETRO]", "%0.2f"%(geomPerimeter))
+        newData = newData.replace("[PERIMETRO]", locale.format('%0.2f', geomPerimeter, grouping=True, monetary=True))
         geomArea = self.geomArea/(kappa*kappa)
-        newData = newData.replace("[AREA]", "%0.2f"%(geomArea))
+        newData = newData.replace("[AREA]", locale.format('%0.2f', geomArea, grouping=True, monetary=True))
         
         newData += "\n"
         newData += "\n"
@@ -245,9 +246,9 @@ class MemorialGenerator(QDialog, FORM_CLASS):
         newData = newData.replace("[UF]", self.ufEdit.text())
         newData = newData.replace("[COD_INCRA]", self.codIncraEdit.text())
         geomPerimeter = self.geomPerimeter/kappa
-        newData = newData.replace("[PERIMETRO]", "%0.2f"%(geomPerimeter))
+        newData = newData.replace("[PERIMETRO]", locale.format('%0.2f', geomPerimeter, grouping=True, monetary=True))
         geomArea = self.geomArea/(kappa*kappa)
-        newData = newData.replace("[AREA]", "%0.2f"%(geomArea))
+        newData = newData.replace("[AREA]", locale.format('%0.2f', geomArea, grouping=True, monetary=True))
         newData = newData.replace("[COMARCA]", self.comarcaEdit.text())
         newData = newData.replace("[MUNICIPIO]", self.municipioEdit.text())
         newData = newData.replace("[MATRICULA]", self.matriculaEdit.text())
@@ -267,7 +268,8 @@ class MemorialGenerator(QDialog, FORM_CLASS):
         description += "Inicia-se a descrição deste perímetro no vértice "+self.tableWidget.item(0,0).text()+", de coordenadas "
         description += "N "+self.tableWidget.item(0,2).text()+" m e "
         description += "E "+self.tableWidget.item(0,1).text()+" m, "
-        description += "Datum " +self.datumEdit.text()+ " com Meridiano Central " +self.meridianoEdit.text()+ ", localizado a "+self.enderecoEdit.text()+", Código INCRA " +self.codIncraEdit.text()+ "; "
+        description += "localizado na "+self.enderecoEdit.text()+ ";"
+# description += "Datum " +self.datumEdit.text()+ " com Meridiano Central " +self.meridianoEdit.text()+ ", localizado a "+self.enderecoEdit.text()+", Código INCRA " +self.codIncraEdit.text()+ "; "
 
         rowCount = self.tableWidget.rowCount()            
         for i in range(0,rowCount):
@@ -275,19 +277,19 @@ class MemorialGenerator(QDialog, FORM_CLASS):
             sideSplit = side.split("-")
 
             description += " deste, segue confrontando com "+self.tableWidget.item(i,7).text()+", "
-            description += "com os seguintes azimute plano e distância:"
+            description += "com os seguintes azimute plano e distância: "
             description += self.tableWidget.item(i,4).text()+" e "
             description += self.tableWidget.item(i,6).text()+"; até o vértice "
             if (i == rowCount - 1):
                 description += sideSplit[1]+", de coordenadas "
                 description += "N "+self.tableWidget.item(0,2).text()+" m e "
                 description += "E "+self.tableWidget.item(0,1).text()+" m, encerrando esta descrição."
-                description += " Todas as coordenadas aqui descritas estão georrefereciadas ao Sistema Geodésico Brasileiro, "
-                description += "a partir da estação RBMC de "+self.rbmcOrigemEdit.text()+" de coordenadas "
-                description += "E "+self.rbmcEsteEdit.text()+" m e N "+self.rbmcNorteEdit.text()+" m, "
-                description += "localizada em "+self.localRbmcEdit.text()+", "
+                description += " Todas as coordenadas aqui descritas estão georrefereciadas ao Sistema Geodésico Brasileiro "
+#                 description += "a partir da estação RBMC de "+self.rbmcOrigemEdit.text()+" de coordenadas "
+#                 description += "E "+self.rbmcEsteEdit.text()+" m e N "+self.rbmcNorteEdit.text()+" m, "
+#                 description += "localizada em "+self.localRbmcEdit.text()+", "
                 description += "e encontram-se representadas no sistema UTM, referenciadas ao Meridiano Central "+self.meridianoEdit.text()
-                description += ", tendo como DATUM "+self.datumEdit.text()+"."
+                description += ", tendo como DATUM "+self.datumEdit.text().strip()+". "
                 description += "Todos os azimutes e distâncias, área e perímetro foram calculados no plano de projeção UTM."
             else:
                 description += sideSplit[1]+", de coordenadas "

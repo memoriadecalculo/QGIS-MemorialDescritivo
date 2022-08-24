@@ -25,9 +25,10 @@ import os
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog, QTableWidgetItem, QMessageBox
 from qgis.core import QgsWkbTypes, QgsGeometry
-
+import locale
 import math
 from decimal import Decimal
+locale.setlocale(locale.LC_ALL, '')
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_azimuthsAndDistances.ui'))
@@ -179,11 +180,17 @@ class AzimuthsAndDistancesDialog(QDialog, FORM_CLASS):
 
             itemVertex = QTableWidgetItem(prefix+str(i))
             self.tableWidget.setItem(i, 0, itemVertex)
-            e = Decimal(self.points[i].x()).quantize(q)
-            itemE = QTableWidgetItem(str(e))
+            
+#             e = Decimal(self.points[i].x()).quantize(q)
+#             itemE = QTableWidgetItem(str(e))
+            fmtD = '%0.' + str(decimalPlaces) + 'f'
+            
+            itemE = QTableWidgetItem(locale.format(fmtD, self.points[i].x(), grouping=True, monetary=True))
             self.tableWidget.setItem(i, 1, itemE)
-            n = Decimal(self.points[i].y()).quantize(q)
-            itemN = QTableWidgetItem(str(n))
+            
+#             n = Decimal(self.points[i].y()).quantize(q)
+#             itemN = QTableWidgetItem(str(n))
+            itemN = QTableWidgetItem(locale.format(fmtD, self.points[i].y(), grouping=True, monetary=True))
             self.tableWidget.setItem(i, 2, itemN)
 
             if (i == len(distancesAndAzimuths) - 1) and isClosed:
@@ -197,7 +204,8 @@ class AzimuthsAndDistancesDialog(QDialog, FORM_CLASS):
             self.tableWidget.setItem(i, 4, itemAz)
             itemRealAz = QTableWidgetItem(realAzimuth)
             self.tableWidget.setItem(i, 5, itemRealAz)
-            dist = "%0.2f"%(distancesAndAzimuths[i][0])
+#             dist = "%0.2f"%(distancesAndAzimuths[i][0])
+            dist = locale.format('%0.2f', distancesAndAzimuths[i][0], grouping=True, monetary=True)+ ' m'
             itemDistance = QTableWidgetItem(dist)
             self.tableWidget.setItem(i, 6, itemDistance)
             itemConfronting = QTableWidgetItem("")
@@ -215,4 +223,4 @@ class AzimuthsAndDistancesDialog(QDialog, FORM_CLASS):
         degrees = str(int(degrees)) if is_positive else '-' + str(int(degrees))
         minutes = int(minutes)
 
-        return degrees + u"\u00b0" + str(minutes).zfill(2) + "'" + "%0.2f"%(seconds) + "''"        
+        return degrees.zfill(3) + u"\u00b0" + str(minutes).zfill(2) + "'" + locale.format('%05.2f', seconds, grouping=True, monetary=True) + '"'        
